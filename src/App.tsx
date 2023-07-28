@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./App.css";
 
 interface Products {
@@ -15,10 +16,47 @@ interface ProductArray {
   products: Products[];
 }
 
+interface ProductTableProps {
+  products: Products[];
+  filterText: string;
+  inStockOnly: boolean;
+}
+
+interface SearchBarProps {
+  filterText: string;
+  inStockOnly: boolean;
+  onFilterTextChange: (filterText: string) => void;
+  onInStockOnlyChange: (inStockOnly: boolean) => void;
+}
+
+const FilterableProductTable: React.FC<ProductArray> = ({ products }) => {
+  const [filterText, setFilterText] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(false);
+
+  return (
+    <div className="table-container">
+      <h1>Quitanda do Seu Zé</h1>
+      <SearchBar
+        inStockOnly={inStockOnly}
+        filterText={filterText}
+        onFilterTextChange={setFilterText}
+        onInStockOnlyChange={setInStockOnly}
+      />
+      <ProductTable
+        products={products}
+        inStockOnly={inStockOnly}
+        filterText={filterText}
+      />
+    </div>
+  );
+};
+
 const ProductCategoryRow = ({ category }: { category: string }) => {
   return (
     <tr>
-      <th colSpan={2}>{category}</th>
+      <th className="categories" colSpan={2}>
+        {category}
+      </th>
     </tr>
   );
 };
@@ -27,6 +65,7 @@ const ProductRow: React.FC<ProductRowProps> = ({ product }) => {
   const name = product.stocked ? (
     product.name
   ) : (
+    //terá um estado controlando se renderiza isso na tela
     <span style={{ color: "red" }}>{product.name}</span>
   );
   return (
@@ -37,11 +76,22 @@ const ProductRow: React.FC<ProductRowProps> = ({ product }) => {
   );
 };
 
-const ProductTable: React.FC<ProductArray> = ({ products }) => {
+const ProductTable: React.FC<ProductTableProps> = ({
+  products,
+  filterText,
+  inStockOnly,
+}) => {
   const rows: JSX.Element[] = [];
   let lastCategory: string | null = null;
 
   products.forEach((product) => {
+    if (product.name.toLowerCase().indexOf(filterText.toLowerCase()) === -1) {
+      return;
+    }
+    if (inStockOnly && !product.stocked) {
+      return;
+    }
+
     product.category !== lastCategory &&
       rows.push(
         <ProductCategoryRow
@@ -56,7 +106,7 @@ const ProductTable: React.FC<ProductArray> = ({ products }) => {
   return (
     <table>
       <thead>
-        <tr>
+        <tr className="name-price">
           <th>Name</th>
           <th>Price</th>
         </tr>
@@ -66,24 +116,29 @@ const ProductTable: React.FC<ProductArray> = ({ products }) => {
   );
 };
 
-const SearchBar = () => {
+const SearchBar: React.FC<SearchBarProps> = ({
+  inStockOnly,
+  filterText,
+  onFilterTextChange,
+  onInStockOnlyChange,
+}) => {
   return (
     <form>
-      <input type="text" placeholder="Search..." />
+      <input
+        type="text"
+        value={filterText}
+        placeholder="Search..."
+        onChange={(e) => onFilterTextChange(e.target.value)}
+      />
       <label>
-        <input type="checkbox" />
+        <input
+          type="checkbox"
+          checked={inStockOnly}
+          onChange={(e) => onInStockOnlyChange(e.target.checked)}
+        />
         Only show products in stock
       </label>
     </form>
-  );
-};
-
-const FilterableProductTable: React.FC<ProductArray> = ({ products }) => {
-  return (
-    <div>
-      <SearchBar />
-      <ProductTable products={products} />
-    </div>
   );
 };
 

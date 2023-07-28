@@ -1,0 +1,22 @@
+.table-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+table{
+    border-top: 2px solid;
+    margin-top: 32px;
+    border-spacing: 24px 8px;
+}
+
+.categories{
+    border-bottom: 1px solid;
+}
